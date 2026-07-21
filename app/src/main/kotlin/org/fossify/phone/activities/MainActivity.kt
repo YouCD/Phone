@@ -2,7 +2,10 @@ package org.fossify.phone.activities
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
@@ -10,6 +13,7 @@ import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.widget.ImageView
 import android.widget.TextView
@@ -58,11 +62,18 @@ class MainActivity : SimpleActivity() {
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
     var cachedContacts = ArrayList<Contact>()
+    private val shortcutPrefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == "last_icon_color" || key == "app_icon_color") {
+            Handler(Looper.getMainLooper()).postDelayed({ checkShortcuts() }, 1000)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
+        config.initializeDefaults()
+        ensureOnlyOneLauncherAlias()
         setupOptionsMenu()
         refreshMenuItems()
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.mainTabsHolder))
@@ -104,6 +115,7 @@ class MainActivity : SimpleActivity() {
 
         setupTabs()
         Contact.sorting = config.sorting
+        config.registerPrefsListener(shortcutPrefListener)
     }
 
     override fun onResume() {
@@ -144,8 +156,10 @@ class MainActivity : SimpleActivity() {
             }
         }
 
-        checkShortcuts()
-        Handler().postDelayed({
+        Handler(Looper.getMainLooper()).postDelayed({
+            checkShortcuts()
+        }, 500)
+        Handler(Looper.getMainLooper()).postDelayed({
             getRecentsFragment()?.refreshItems()
         }, 2000)
     }
@@ -202,7 +216,6 @@ class MainActivity : SimpleActivity() {
             findItem(R.id.create_new_contact).isVisible = currentFragment == getContactsFragment()
             findItem(R.id.change_view_type).isVisible = currentFragment == getFavoritesFragment()
             findItem(R.id.column_count).isVisible = currentFragment == getFavoritesFragment() && config.viewType == VIEW_TYPE_GRID
-            findItem(R.id.more_apps_from_us).isVisible = !resources.getBoolean(R.bool.hide_google_relations)
         }
     }
 
@@ -228,7 +241,6 @@ class MainActivity : SimpleActivity() {
                     R.id.create_new_contact -> launchCreateNewContactIntent()
                     R.id.sort -> showSortingDialog(showCustomSorting = getCurrentFragment() is FavoritesFragment)
                     R.id.filter -> showFilterDialog()
-                    R.id.more_apps_from_us -> launchMoreAppsFromUsIntent()
                     R.id.settings -> launchSettings()
                     R.id.change_view_type -> changeViewType()
                     R.id.column_count -> changeColumnCount()
@@ -286,33 +298,104 @@ class MainActivity : SimpleActivity() {
 
     @SuppressLint("NewApi")
     private fun checkShortcuts() {
+        if (!isNougatMR1Plus()) return
         val appIconColor = config.appIconColor
-        if (isNougatMR1Plus() && config.lastHandledShortcutColor != appIconColor) {
-            val launchDialpad = getLaunchDialpadShortcut(appIconColor)
-
-            try {
-                shortcutManager.dynamicShortcuts = listOf(launchDialpad)
-                config.lastHandledShortcutColor = appIconColor
-            } catch (ignored: Exception) {
-            }
+        val aliasComp = getEnabledAliasComponent() ?: return
+        try {
+            shortcutManager.removeAllDynamicShortcuts()
+            val launchDialpad = getLaunchDialpadShortcut(appIconColor, aliasComp)
+            val toggleInterception = getToggleInterceptionShortcut(appIconColor, aliasComp)
+            shortcutManager.addDynamicShortcuts(listOf(launchDialpad, toggleInterception))
+            config.lastHandledShortcutColor = appIconColor
+        } catch (ignored: Exception) {
         }
     }
 
+    private fun getEnabledAliasComponent(): ComponentName? {
+        val aliasSuffixes = listOf(
+            ".Red", ".Pink", ".Purple", ".Deep_purple", ".Indigo", ".Blue",
+            ".Light_blue", ".Cyan", ".Teal", ".Green", ".Light_green", ".Lime",
+            ".Yellow", ".Amber", ".Orange", ".Deep_orange", ".Brown", ".Blue_grey",
+            ".Grey_black"
+        )
+        for (suffix in aliasSuffixes) {
+            val cn = ComponentName(packageName, "$packageName.activities.SplashActivity$suffix")
+            if (packageManager.getComponentEnabledSetting(cn) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+                return cn
+            }
+        }
+        return null
+    }
+
     @SuppressLint("NewApi")
-    private fun getLaunchDialpadShortcut(appIconColor: Int): ShortcutInfo {
+    private fun getLaunchDialpadShortcut(appIconColor: Int, aliasComp: ComponentName): ShortcutInfo {
         val newEvent = getString(R.string.dialpad)
-        val drawable = resources.getDrawable(R.drawable.shortcut_dialpad)
+        val drawable = resources.getDrawable(R.drawable.shortcut_dialpad, theme)
         (drawable as LayerDrawable).findDrawableByLayerId(R.id.shortcut_dialpad_background).applyColorFilter(appIconColor)
         val bmp = drawable.convertToBitmap()
 
-        val intent = Intent(this, DialpadActivity::class.java)
-        intent.action = Intent.ACTION_VIEW
+        val intent = Intent(this, DialpadActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
         return ShortcutInfo.Builder(this, "launch_dialpad")
             .setShortLabel(newEvent)
             .setLongLabel(newEvent)
             .setIcon(Icon.createWithBitmap(bmp))
             .setIntent(intent)
+            .setActivity(aliasComp)
             .build()
+    }
+
+    @SuppressLint("NewApi")
+    private fun getToggleInterceptionShortcut(appIconColor: Int, aliasComp: ComponentName): ShortcutInfo {
+        val label = getString(R.string.toggle_call_interception)
+        val drawable = resources.getDrawable(R.drawable.shortcut_dialpad, theme)
+        (drawable as LayerDrawable).findDrawableByLayerId(R.id.shortcut_dialpad_background).applyColorFilter(appIconColor)
+        val bmp = drawable.convertToBitmap()
+
+        val intent = Intent(this, ToggleInterceptionActivity::class.java).apply {
+            action = Intent.ACTION_VIEW
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        return ShortcutInfo.Builder(this, "phone_toggle_interception")
+            .setShortLabel(label)
+            .setLongLabel(label)
+            .setIcon(Icon.createWithBitmap(bmp))
+            .setIntent(intent)
+            .setActivity(aliasComp)
+            .build()
+    }
+
+    private fun ensureOnlyOneLauncherAlias() {
+        val aliasNames = listOf(
+            "SplashActivity.Red", "SplashActivity.Pink", "SplashActivity.Purple",
+            "SplashActivity.Deep_purple", "SplashActivity.Indigo", "SplashActivity.Blue",
+            "SplashActivity.Light_blue", "SplashActivity.Cyan", "SplashActivity.Teal",
+            "SplashActivity.Green", "SplashActivity.Light_green", "SplashActivity.Lime",
+            "SplashActivity.Yellow", "SplashActivity.Amber", "SplashActivity.Orange",
+            "SplashActivity.Deep_orange", "SplashActivity.Brown", "SplashActivity.Blue_grey",
+            "SplashActivity.Grey_black"
+        )
+        val enabled = aliasNames.filter {
+            packageManager.getComponentEnabledSetting(
+                ComponentName(packageName, "$packageName.activities.$it")
+            ) == PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        }
+        if (enabled.size != 1) {
+            aliasNames.forEach {
+                packageManager.setComponentEnabledSetting(
+                    ComponentName(packageName, "$packageName.activities.$it"),
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+                )
+            }
+            packageManager.setComponentEnabledSetting(
+                ComponentName(packageName, "$packageName.activities.SplashActivity.Green"),
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP
+            )
+        }
     }
 
     private fun setupTabColors() {
@@ -386,7 +469,7 @@ class MainActivity : SimpleActivity() {
 
         // selecting the proper tab sometimes glitches, add an extra selector to make sure we have it right
         binding.mainTabsHolder.onGlobalLayout {
-            Handler().postDelayed({
+            Handler(Looper.getMainLooper()).postDelayed({
                 var wantedTab = getDefaultTab()
 
                 // open the Recents tab if we got here by clicking a missed call notification

@@ -1,6 +1,7 @@
 package org.fossify.phone.helpers
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.telecom.PhoneAccountHandle
 import android.telephony.PhoneNumberUtils
@@ -17,6 +18,12 @@ import java.util.Locale
 class Config(context: Context) : BaseConfig(context) {
     companion object {
         fun newInstance(context: Context) = Config(context)
+    }
+
+    fun initializeDefaults() {
+        if (!prefs.contains(START_NAME_WITH_SURNAME)) {
+            startNameWithSurname = true
+        }
     }
 
     private val regionHint: String by lazy {
@@ -135,4 +142,16 @@ class Config(context: Context) : BaseConfig(context) {
     var alwaysShowFullscreen: Boolean
         get() = prefs.getBoolean(ALWAYS_SHOW_FULLSCREEN, false)
         set(alwaysShowFullscreen) = prefs.edit().putBoolean(ALWAYS_SHOW_FULLSCREEN, alwaysShowFullscreen).apply()
+
+    var callInterceptionEnabled: Boolean
+        get() = prefs.getBoolean(CALL_INTERCEPTION_ENABLED, true)
+        set(enabled) = prefs.edit().putBoolean(CALL_INTERCEPTION_ENABLED, enabled).apply()
+
+    fun registerPrefsListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    fun unregisterPrefsListener(listener: SharedPreferences.OnSharedPreferenceChangeListener) {
+        prefs.unregisterOnSharedPreferenceChangeListener(listener)
+    }
 }

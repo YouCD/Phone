@@ -58,7 +58,7 @@ fun SimpleActivity.startCallWithConfirmationCheck(contact: Contact) {
     if (config.showCallConfirmation) {
         CallConfirmationDialog(
             activity = this,
-            callee = contact.getNameToDisplay()
+            callee = contact.getDisplayName()
         ) {
             initiateCall(contact) { launchCallIntent(it) }
         }

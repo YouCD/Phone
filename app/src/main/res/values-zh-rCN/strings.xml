@@ -77,4 +77,12 @@
     <string name="call_notification_channel">通话状态</string>
     <string name="call_notification_channel_high_priority">通话状态（高优先级）</string>
     <string name="calling_accounts">通话账号</string>
+    <string name="enable_call_interception">启用电话拦截</string>
+    <string name="call_interception_description">陌生人需3分钟内连续两次呼叫才可接通。静音模式下仅收藏联系人可直接接通。</string>
+    <string name="call_intercepted">来电已拦截</string>
+    <string name="call_intercepted_desc">%1$s - 请对方3分钟内再次呼叫</string>
+    <string name="toggle_call_interception">开关来电拦截</string>
+    <string name="call_interception_enabled">来电拦截已开启</string>
+    <string name="call_interception_disabled">来电拦截已关闭</string>
+    <string name="backup_completed">备份完成</string>
 </resources>

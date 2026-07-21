@@ -154,6 +154,16 @@
         </activity>
 
         <activity
+            android:name=".activities.ToggleInterceptionActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Transparent" />
+
+        <activity
+            android:name=".activities.BackupActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Transparent" />
+
+        <activity
             android:name=".activities.DialerActivity"
             android:configChanges="orientation"
             android:exported="true"

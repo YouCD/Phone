@@ -58,6 +58,7 @@ import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getDayCode
+import org.fossify.phone.extensions.getDisplayName
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
@@ -474,7 +475,7 @@ class RecentCallsAdapter(
                 val currentFontSize = fontSize
                 itemRecentsHolder.isSelected = selectedKeys.contains(call.id)
                 val matchingContact = findContactByCall(call)
-                val name = matchingContact?.getNameToDisplay() ?: call.name
+                val name = matchingContact?.getDisplayName() ?: call.name
                 val formatPhoneNumbers = activity.config.formatPhoneNumbers
                 var nameToShow = if (name == call.phoneNumber && formatPhoneNumbers) {
                     SpannableString(name.formatPhoneNumber())

@@ -13,6 +13,7 @@ import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.getAvailableSIMCardLabels
+import org.fossify.phone.extensions.getDisplayName
 import org.fossify.phone.models.RecentCall
 import org.fossify.phone.models.SIMAccount
 
@@ -208,7 +209,7 @@ class RecentsHelper(private val context: Context) {
                                             normalizedNumber.length - COMPARABLE_PHONE_NUMBER_LENGTH
                                         )
                                     ) {
-                                        contactsNumbersMap[number] = contact.getNameToDisplay()
+                                        contactsNumbersMap[number] = contact.getDisplayName()
                                         return@firstOrNull true
                                     }
                                 }
