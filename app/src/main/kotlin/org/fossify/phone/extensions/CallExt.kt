@@ -18,6 +18,7 @@ import org.fossify.commons.extensions.openNotificationSettings
 import org.fossify.commons.extensions.telecomManager
 import org.fossify.commons.helpers.PERMISSION_READ_PHONE_STATE
 import org.fossify.commons.models.contacts.Contact
+import org.fossify.phone.helpers.CallManager
 import org.fossify.phone.BuildConfig
 import org.fossify.phone.activities.DialerActivity
 import org.fossify.phone.activities.SimpleActivity
@@ -58,7 +59,7 @@ fun SimpleActivity.startCallWithConfirmationCheck(contact: Contact) {
     if (config.showCallConfirmation) {
         CallConfirmationDialog(
             activity = this,
-            callee = contact.getNameToDisplay()
+            callee = contact.getDisplayName()
         ) {
             initiateCall(contact) { launchCallIntent(it) }
         }
@@ -132,6 +133,10 @@ fun SimpleActivity.showSelectSimDialog(
     onDismiss = {
         if (this is DialerActivity) {
             finish()
+        } else {
+            // The call was left behind in SELECT_PHONE_ACCOUNT; disconnect it so it doesn't
+            // keep Telecom (and thus the volume keys) in a "in-call" state forever.
+            CallManager.disconnectStuckCall()
         }
     }
 ) { handle ->

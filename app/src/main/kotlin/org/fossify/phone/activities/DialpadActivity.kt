@@ -58,6 +58,7 @@ import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.helpers.DIALPAD_TONE_LENGTH_MS
+import org.fossify.phone.helpers.PinyinHelper
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.ToneGeneratorHelper
 import org.fossify.phone.models.SpeedDial
@@ -326,7 +327,20 @@ class DialpadActivity : SimpleActivity() {
                 convertedName = currConvertedName
             }
 
-            contact.doesContainPhoneNumber(text) || (convertedName.contains(text, true))
+            val matchesPhone = contact.doesContainPhoneNumber(text)
+            val matchesEnglishT9 = convertedName.contains(text, true)
+
+            var matchesChineseT9 = false
+            var matchesChineseInitials = false
+            val name = contact.name
+            if (PinyinHelper.hasChinese(name)) {
+                val pinyinDigits = PinyinHelper.getPinyinDigits(name)
+                val initialsDigits = PinyinHelper.getPinyinInitialsDigits(name)
+                matchesChineseT9 = pinyinDigits.contains(text, true)
+                matchesChineseInitials = initialsDigits.contains(text, true)
+            }
+
+            matchesPhone || matchesEnglishT9 || matchesChineseT9 || matchesChineseInitials
         }.sortedWith(compareBy {
             !it.doesContainPhoneNumber(text)
         }).toMutableList() as ArrayList<Contact>

@@ -199,6 +199,21 @@ class CallManager {
             listeners.remove(listener)
         }
 
+        /**
+         * Disconnects a primary call that is stuck in [Call.STATE_SELECT_PHONE_ACCOUNT], e.g. when
+         * the user dismissed the SIM selection without picking a SIM. Leaving such a call behind
+         * would keep [android.telecom.TelecomManager.isInCall] true indefinitely, which in turn
+         * makes the volume keys control the voice-call stream instead of music.
+         */
+        fun disconnectStuckCall() {
+            val call = getPrimaryCall() ?: return
+            if (call.getStateCompat() != Call.STATE_SELECT_PHONE_ACCOUNT) return
+            try {
+                call.disconnect()
+            } catch (_: Exception) {
+            }
+        }
+
         fun getState() = getPrimaryCall()?.getStateCompat()
 
         fun keypad(char: Char) {

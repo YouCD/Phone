@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="default_phone_app_prompt">请将此应用程序设置为默认的通话程序</string>
+    <string name="default_dialer_not_set_after_boot">此应用已不再是默认电话应用，来电界面将不会显示。点按可重新设为默认电话应用。</string>
+    <string name="boot_notification_channel">启动通知</string>
     <string name="allow_displaying_over_other_apps">为了应用能稳定工作，请允许其显示在其他应用上方</string>
     <string name="could_not_access_contacts">无法访问您的通讯录</string>
     <string name="no_previous_calls">未找到先前的通话</string>
@@ -27,7 +29,7 @@
     <string name="dialing">拨号中…</string>
     <string name="call_ended">通话结束</string>
     <string name="call_ending">通话正在结束</string>
-    <string name="ongoing_call">呼入通话</string>
+    <string name="ongoing_call">通话中</string>
     <string name="select_sim">为此通话选择一个 SIM 卡</string>
     <string name="always_use_this_sim">为此号码一直使用该 SIM 卡</string>
     <string name="unset_default_sim">取消设置默认  SIM 卡</string>
@@ -77,4 +79,12 @@
     <string name="call_notification_channel">通话状态</string>
     <string name="call_notification_channel_high_priority">通话状态（高优先级）</string>
     <string name="calling_accounts">通话账号</string>
+    <string name="enable_call_interception">启用电话拦截</string>
+    <string name="call_interception_description">陌生人需3分钟内连续两次呼叫才可接通。静音模式下仅收藏联系人可直接接通。</string>
+    <string name="call_intercepted">来电已拦截</string>
+    <string name="call_intercepted_desc">%1$s - 请对方3分钟内再次呼叫</string>
+    <string name="toggle_call_interception">开关来电拦截</string>
+    <string name="call_interception_enabled">来电拦截已开启</string>
+    <string name="call_interception_disabled">来电拦截已关闭</string>
+    <string name="backup_completed">备份完成</string>
 </resources>

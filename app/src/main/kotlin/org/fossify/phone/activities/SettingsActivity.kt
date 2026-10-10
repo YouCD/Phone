@@ -115,6 +115,7 @@ class SettingsActivity : SimpleActivity() {
         setupDisableProximitySensor()
         setupDisableSwipeToAnswer()
         setupAlwaysShowFullscreen()
+        setupCallInterception()
         setupCallsExport()
         setupCallsImport()
         updateTextColors(binding.settingsHolder)
@@ -387,6 +388,16 @@ class SettingsActivity : SimpleActivity() {
             settingsAlwaysShowFullscreenHolder.setOnClickListener {
                 settingsAlwaysShowFullscreen.toggle()
                 config.alwaysShowFullscreen = settingsAlwaysShowFullscreen.isChecked
+            }
+        }
+    }
+
+    private fun setupCallInterception() {
+        binding.apply {
+            settingsEnableCallInterception.isChecked = config.callInterceptionEnabled
+            settingsEnableCallInterceptionHolder.setOnClickListener {
+                settingsEnableCallInterception.toggle()
+                config.callInterceptionEnabled = settingsEnableCallInterception.isChecked
             }
         }
     }

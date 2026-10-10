@@ -30,9 +30,11 @@ import org.fossify.commons.models.contacts.Contact
 import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
+import org.fossify.phone.helpers.PinyinHelper
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSim
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getDisplayName
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.interfaces.RefreshItemsListener
 import java.util.Collections
@@ -273,7 +275,7 @@ class ContactsAdapter(
         val itemsCnt = selectedKeys.size
         val firstItem = getSelectedItems().firstOrNull() ?: return
         val items = if (itemsCnt == 1) {
-            "\"${firstItem.getNameToDisplay()}\""
+            "\"${firstItem.getDisplayName()}\""
         } else {
             resources.getQuantityString(R.plurals.delete_contacts, itemsCnt, itemsCnt)
         }
@@ -329,7 +331,7 @@ class ContactsAdapter(
         val contact = contacts.firstOrNull { selectedKeys.contains(it.rawId) } ?: return
         val manager = activity.shortcutManager
         if (manager.isRequestPinShortcutSupported) {
-            SimpleContactsHelper(activity).getShortcutImage(contact.photoUri, contact.getNameToDisplay()) { image ->
+            SimpleContactsHelper(activity).getShortcutImage(contact.photoUri, contact.getDisplayName()) { image ->
                 activity.runOnUiThread {
                     activity.handlePermission(PERMISSION_CALL_PHONE) { hasPermission ->
                         val action = if (hasPermission) Intent.ACTION_CALL else Intent.ACTION_DIAL
@@ -338,7 +340,7 @@ class ContactsAdapter(
                         }
 
                         val shortcut = ShortcutInfo.Builder(activity, contact.hashCode().toString())
-                            .setShortLabel(contact.getNameToDisplay())
+                            .setShortLabel(contact.getDisplayName())
                             .setIcon(Icon.createWithBitmap(image))
                             .setIntent(intent)
                             .build()
@@ -387,7 +389,7 @@ class ContactsAdapter(
                 setTextColor(textColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
 
-                val name = contact.getNameToDisplay()
+                val name = contact.getDisplayName()
                 text = if (textToHighlight.isEmpty()) {
                     name
                 } else {
@@ -395,6 +397,11 @@ class ContactsAdapter(
                     val normalizedSearchText = textToHighlight.normalizeString()
                     if (normalizedName.contains(normalizedSearchText, true)) {
                         name.highlightTextPart(normalizedSearchText, properPrimaryColor)
+                    } else if (PinyinHelper.hasChinese(name) && textToHighlight.all { it.isDigit() } &&
+                        (PinyinHelper.getPinyinDigits(name).contains(textToHighlight, true) ||
+                            PinyinHelper.getPinyinInitialsDigits(name).contains(textToHighlight, true))
+                    ) {
+                        name.highlightTextFromNumbers(textToHighlight, properPrimaryColor)
                     } else {
                         var spacedTextToHighlight = textToHighlight
                         val strippedName = name.filterNot { it.isWhitespace() }
@@ -433,7 +440,7 @@ class ContactsAdapter(
             }
 
             if (!activity.isDestroyed) {
-                SimpleContactsHelper(root.context).loadContactImage(contact.photoUri, itemContactImage, contact.getNameToDisplay())
+                SimpleContactsHelper(root.context).loadContactImage(contact.photoUri, itemContactImage, contact.getDisplayName())
             }
         }
     }

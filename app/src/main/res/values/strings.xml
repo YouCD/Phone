@@ -2,6 +2,8 @@
 <resources>
     <string name="app_launcher_name">Phone</string>
     <string name="default_phone_app_prompt">Please make this app the default Phone app</string>
+    <string name="default_dialer_not_set_after_boot">This app is no longer the default dialer. Incoming calls will not be shown. Tap to set it as the default dialer.</string>
+    <string name="boot_notification_channel">Startup notifications</string>
     <string name="allow_displaying_over_other_apps">Please allow displaying over other apps for reliable behaviour</string>
 
     <!-- Contacts -->
@@ -83,6 +85,14 @@
     <string name="export_call_history">Export call history</string>
     <string name="import_call_history">Import call history</string>
     <string name="calling_accounts">Calling accounts</string>
+    <string name="enable_call_interception">Enable call interception</string>
+    <string name="call_interception_description">Strangers need 2 calls within 3 min to connect. In silent mode, only favorites ring through.</string>
+    <string name="call_intercepted">Call intercepted</string>
+    <string name="call_intercepted_desc">%1$s - Please call again within 3 minutes</string>
+    <string name="toggle_call_interception">Toggle call interception</string>
+    <string name="call_interception_enabled">Call interception enabled</string>
+    <string name="call_interception_disabled">Call interception disabled</string>
+    <string name="backup_completed">Backup completed</string>
 
     <!-- FAQ -->
     <string name="faq_1_title">I hear incoming calls, but the screen doesn\'t turn on. What can I do?</string>

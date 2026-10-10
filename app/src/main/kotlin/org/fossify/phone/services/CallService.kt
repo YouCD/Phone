@@ -92,6 +92,9 @@ class CallService : InCallService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Last-resort cleanup: don't leave a call stuck in SELECT_PHONE_ACCOUNT, or Telecom's
+        // isInCall() stays true and the volume keys control call volume after the call ends.
+        CallManager.disconnectStuckCall()
         callNotificationManager.cancelNotification()
     }
 }

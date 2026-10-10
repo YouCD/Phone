@@ -106,6 +106,7 @@ class CallActivity : SimpleActivity() {
         if (screenOnWakeLock?.isHeld == true) {
             screenOnWakeLock!!.release()
         }
+        CallManager.disconnectStuckCall()
     }
 
     override fun onBackPressedCompat(): Boolean {
@@ -750,10 +751,14 @@ class CallActivity : SimpleActivity() {
     }
 
     private fun showPhoneAccountPicker() {
-        if (callContact != null) {
-            getHandleToUse(intent, callContact!!.number) { handle ->
-                CallManager.getPrimaryCall()?.phoneAccountSelected(handle, false)
-            }
+        val phoneNumber = callContact?.number
+            ?: CallManager.getPrimaryCall()?.details?.handle?.schemeSpecificPart
+        if (phoneNumber.isNullOrBlank()) {
+            CallManager.disconnectStuckCall()
+            return
+        }
+        getHandleToUse(intent, phoneNumber) { handle ->
+            CallManager.getPrimaryCall()?.phoneAccountSelected(handle, false)
         }
     }
 
