@@ -652,7 +652,7 @@ class MainActivity : SimpleActivity() {
             FAQItem(R.string.faq_9_title_commons, R.string.faq_9_text_commons)
         )
 
-        if (!resources.getBoolean(R.bool.hide_google_relations)) {
+        if (resources.getBoolean(R.bool.is_google_play_build)) {
             faqItems.add(FAQItem(R.string.faq_2_title_commons, R.string.faq_2_text_commons))
             faqItems.add(FAQItem(R.string.faq_6_title_commons, R.string.faq_6_text_commons))
         }
