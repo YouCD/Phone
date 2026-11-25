@@ -156,7 +156,9 @@
 
         <activity
             android:name=".activities.ToggleInterceptionActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
+            android:taskAffinity=""
             android:theme="@style/Theme.Transparent" />
 
         <activity

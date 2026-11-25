@@ -25,6 +25,7 @@ adb wait-for-device
 adb root 2>/dev/null
 adb remount 2>/dev/null
 adb push "$SIGNED_APK" "$DEVICE_PATH"
+adb shell "pm install -r $DEVICE_PATH"
 
 echo ":: 重新启动应用..."
 adb shell "am force-stop org.fossify.phone; am start -n org.fossify.phone/.activities.MainActivity"
